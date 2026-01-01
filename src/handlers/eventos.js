@@ -1,5 +1,6 @@
 import { json, error } from "../utils/response";
 import { procesarEvento } from "./eventosHandler";
+import { registrarAnalyticsHandler } from "./analytics";
 
 export async function eventosHandler(request, env) {
     const body = await request.json();
@@ -21,6 +22,9 @@ export async function eventosHandler(request, env) {
     };
 
     await procesarEvento(env.DB, evento);
+    
+    // 📊 Registrar en analytics
+    await registrarAnalyticsHandler(env, body.cuenta_codigo, body.tipo, evento.fecha);
 
     return json({ ok: true });
 }

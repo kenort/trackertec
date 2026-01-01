@@ -8,30 +8,36 @@ export async function crearApiKeyAdmin(request, env) {
     }
 
     const body = await request.json();
-    const { cuenta_codigo, nombre } = body;
+    const { cuenta_codigo, nombre, role } = body;
 
     if (!cuenta_codigo) {
         return error("cuenta_codigo requerido");
     }
 
+    // Validar role (admin, write, read)
+    const validRoles = ["admin", "write", "read"];
+    const assignedRole = validRoles.includes(role) ? role : "read";
+
     const apiKey = await generarApiKey();
     const keyHash = await hashKey(apiKey);
 
     await env.DB.prepare(`
-    INSERT INTO api_keys (id, key_hash, cuenta_codigo, nombre)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO api_keys (id, key_hash, cuenta_codigo, nombre, role, creado_en)
+    VALUES (?, ?, ?, ?, ?, datetime('now'))
   `).bind(
         crypto.randomUUID(),
         keyHash,
         cuenta_codigo,
-        nombre || null
+        nombre || null,
+        assignedRole
     ).run();
 
     // ⚠️ SOLO AQUÍ se devuelve la clave en claro
     return json({
         api_key: apiKey,
         cuenta_codigo,
-        nombre
+        nombre,
+        role: assignedRole
     });
 }
 

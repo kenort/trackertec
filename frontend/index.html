@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard MQTT - TrackerTec</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>📊 Dashboard MQTT</h1>
+                <div class="header-controls">
+                    <input 
+                        type="password" 
+                        id="apiKeyInput" 
+                        placeholder="Ingresa tu API Key"
+                        class="api-key-input"
+                    >
+                    <button id="connectBtn" class="btn btn-primary">Conectar</button>
+                    <span id="connectionStatus" class="status-badge disconnected">Desconectado</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Filters -->
+            <div class="filters-section">
+                <h2>Filtros</h2>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="cuentaFilter">Cuenta:</label>
+                        <input 
+                            type="text" 
+                            id="cuentaFilter" 
+                            placeholder="Filtrar por cuenta"
+                            disabled
+                        >
+                    </div>
+                    <div class="filter-group">
+                        <label for="tipoFilter">Tipo de Evento:</label>
+                        <select id="tipoFilter" disabled>
+                            <option value="">Todos los tipos</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="fechaDesdeFilter">Desde:</label>
+                        <input 
+                            type="datetime-local" 
+                            id="fechaDesdeFilter"
+                            disabled
+                        >
+                    </div>
+                    <div class="filter-group">
+                        <label for="fechaHastaFilter">Hasta:</label>
+                        <input 
+                            type="datetime-local" 
+                            id="fechaHastaFilter"
+                            disabled
+                        >
+                    </div>
+                    <button id="aplicarFiltrosBtn" class="btn btn-secondary" disabled>
+                        Aplicar Filtros
+                    </button>
+                    <button id="limpiarFiltrosBtn" class="btn btn-secondary" disabled>
+                        Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <h3>Total Eventos</h3>
+                    <p class="stat-value" id="totalEventos">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Hoy</h3>
+                    <p class="stat-value" id="eventosHoy">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Eventos/Hora</h3>
+                    <p class="stat-value" id="eventosHora">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Último Evento</h3>
+                    <p class="stat-value" id="ultimoEvento">--:--</p>
+                </div>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="layout-2col">
+                <!-- Left: Tabla de Eventos -->
+                <section class="eventos-section">
+                    <h2>Eventos en Tiempo Real</h2>
+                    <div class="table-wrapper">
+                        <table id="eventosTable">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Cuenta</th>
+                                    <th>Origen</th>
+                                    <th>Fecha/Hora</th>
+                                    <th>Ubicación</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventosTableBody">
+                                <tr class="placeholder">
+                                    <td colspan="6">Conecta con tu API Key para ver eventos</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Right: Mapa -->
+                <section class="mapa-section">
+                    <h2>Ubicaciones</h2>
+                    <div id="map" class="map-container"></div>
+                </section>
+            </div>
+
+            <!-- Analytics -->
+            <section class="analytics-section">
+                <div class="analytics-grid">
+                    <div class="chart-container">
+                        <h3>Eventos por Tipo</h3>
+                        <canvas id="tipoChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Eventos por Hora</h3>
+                        <canvas id="horaChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Top Cuentas</h3>
+                        <canvas id="cuentasChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
