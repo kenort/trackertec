@@ -2,8 +2,7 @@ import { authMiddleware } from "./middleware/auth";
 import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { requireRole } from "./middleware/roleValidator";
 import { requireAdminKey } from "./middleware/adminKeyValidator";
-import { eventosHandler } from "./handlers/eventos";
-import { listarEventosHandler } from "./handlers/listarEventos";
+import { eventosHandler, listarEventosHandler } from "./handlers/eventos";
 import { statusHandler } from "./handlers/health";
 import { error } from "./utils/response";
 import {
