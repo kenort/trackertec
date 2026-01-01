@@ -16,6 +16,27 @@ export async function crearNotificacionHandler(request, env) {
     const notificationType = tiposValidos.includes(tipo) ? tipo : "info";
 
     try {
+        // Crear tabla si no existe (para desarrollo local)
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cuenta_codigo TEXT NOT NULL,
+                titulo TEXT NOT NULL,
+                mensaje TEXT,
+                tipo TEXT DEFAULT 'info' CHECK(tipo IN ('info', 'warning', 'error', 'critical')),
+                evento_id TEXT,
+                leida INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now')),
+                FOREIGN KEY (cuenta_codigo) REFERENCES cuentas(codigo)
+            )
+        `).run();
+
+        // Crear índice si no existe
+        await env.DB.prepare(`
+            CREATE INDEX IF NOT EXISTS idx_notifications_cuenta
+            ON notifications (cuenta_codigo)
+        `).run();
+
         await env.DB.prepare(`
             INSERT INTO notifications (cuenta_codigo, titulo, mensaje, tipo, evento_id, created_at)
             VALUES (?, ?, ?, ?, ?, datetime('now'))

@@ -6,6 +6,19 @@ import { json, error } from "../utils/response";
  */
 export async function registrarAnalyticsHandler(env, cuenta_codigo, tipo, fecha) {
     try {
+        // Crear tabla si no existe (para desarrollo local)
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS analytics (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cuenta_codigo TEXT NOT NULL,
+                evento_tipo TEXT NOT NULL,
+                fecha_hora TEXT NOT NULL,
+                cantidad INTEGER DEFAULT 1,
+                UNIQUE(cuenta_codigo, evento_tipo, fecha_hora),
+                FOREIGN KEY (cuenta_codigo) REFERENCES cuentas(codigo)
+            )
+        `).run();
+
         // Agrupar por hora
         const fechaHora = new Date(fecha);
         fechaHora.setMinutes(0, 0, 0);

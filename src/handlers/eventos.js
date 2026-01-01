@@ -9,6 +9,34 @@ export async function eventosHandler(request, env) {
         return error("tipo y cuenta_codigo son obligatorios");
     }
 
+    // Crear tabla cuentas si no existe
+    try {
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS cuentas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                codigo TEXT NOT NULL UNIQUE,
+                nombre TEXT NOT NULL,
+                direccion TEXT,
+                telefono TEXT,
+                lat REAL,
+                lng REAL,
+                created_at TEXT DEFAULT (datetime('now'))
+            )
+        `).run();
+    } catch (e) {
+        // Tabla ya existe
+    }
+
+    // Crear la cuenta si no existe (para resolver foreign key constraint)
+    try {
+        await env.DB.prepare(`
+            INSERT INTO cuentas (codigo, nombre)
+            VALUES (?, ?)
+        `).bind(body.cuenta_codigo, body.cuenta_codigo).run();
+    } catch (e) {
+        // Cuenta ya existe, ignorar
+    }
+
     // Adaptamos HTTP → evento normalizado
     const evento = {
         event_id: body.event_id,
@@ -35,9 +63,30 @@ import {
 } from "../services/eventosService";
 
 export async function listarEventosHandler(request, env) {
+    try {
+        // Crear tabla eventos si no existe
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS eventos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id TEXT NOT NULL,
+                tipo TEXT NOT NULL,
+                cuenta_codigo TEXT NOT NULL,
+                origen TEXT,
+                lat REAL,
+                lng REAL,
+                fecha_evento TEXT NOT NULL,
+                payload TEXT,
+                created_at TEXT DEFAULT (datetime('now')),
+                FOREIGN KEY (cuenta_codigo) REFERENCES cuentas(codigo)
+            )
+        `).run();
+    } catch (e) {
+        // Tabla ya existe
+    }
+
     const { searchParams } = new URL(request.url);
 
-    const cuenta = searchParams.get("cuenta");
+    const cuenta = searchParams.get("cuenta") || request.cuenta;
     const tipo = searchParams.get("tipo");
     const limit = Number(searchParams.get("limit") ?? 50);
     const offset = Number(searchParams.get("offset") ?? 0);
@@ -49,7 +98,7 @@ export async function listarEventosHandler(request, env) {
         offset
     });
 
-    return json(eventos);
+    return json(eventos || []);
 }
 
 export async function eventosPorCuentaHandler(request, env, cuenta) {

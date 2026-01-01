@@ -13,6 +13,27 @@ export async function rateLimitMiddleware(request, env) {
         return null;
     }
 
+    try {
+        // Crear tabla si no existe (para desarrollo local)
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS rate_limits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                api_key_id TEXT NOT NULL,
+                timestamp TEXT NOT NULL,
+                requests_count INTEGER DEFAULT 1,
+                FOREIGN KEY (api_key_id) REFERENCES api_keys(id)
+            )
+        `).run();
+
+        // Crear índice si no existe
+        await env.DB.prepare(`
+            CREATE INDEX IF NOT EXISTS idx_rate_limits_key_timestamp
+            ON rate_limits (api_key_id, timestamp)
+        `).run();
+    } catch (e) {
+        // Ignorar errores de creación (tabla ya existe)
+    }
+
     const roleLimits = {
         admin: 1000,
         write: 500,

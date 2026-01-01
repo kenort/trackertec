@@ -9,6 +9,23 @@ export async function authMiddleware(request, env) {
         return null;
     }
 
+    try {
+        // Crear tabla api_keys si no existe (para desarrollo local)
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS api_keys (
+                id TEXT PRIMARY KEY,
+                nombre TEXT,
+                key_hash TEXT NOT NULL,
+                cuenta_codigo TEXT,
+                role TEXT DEFAULT 'read' CHECK(role IN ('admin', 'write', 'read')),
+                activo INTEGER DEFAULT 1,
+                creado_en TEXT
+            )
+        `).run();
+    } catch (e) {
+        // Ignorar errores de creación (tabla ya existe)
+    }
+
     const apiKey = request.headers.get("x-api-key");
 
     if (!apiKey) {

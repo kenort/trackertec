@@ -25,90 +25,104 @@ import {
 
 
 
+// CORS Headers
+function addCorsHeaders(response) {
+    const headers = new Headers(response.headers);
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, x-api-key, x-admin-key');
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 export async function router(request, env) {
     const url = new URL(request.url);
     const pathname = url.pathname;
     const method = request.method;
 
+    // 🔄 Manejar preflight requests (CORS)
+    if (method === "OPTIONS") {
+        return addCorsHeaders(new Response(null, { status: 204 }));
+    }
+
     // ✅ Health check (sin autenticación)
     if (pathname === "/status" && method === "GET") {
-        return statusHandler();
+        return addCorsHeaders(statusHandler());
     }
 
     // 🔑 Admin endpoints (validar x-admin-key ANTES de authMiddleware)
     if ((pathname === "/admin/api-keys" || pathname === "/admin/api-keys/revoke") && method === "POST") {
         const adminKeyCheck = requireAdminKey(request, env);
         if (adminKeyCheck instanceof Response) {
-            return adminKeyCheck;
+            return addCorsHeaders(adminKeyCheck);
         }
 
         if (pathname === "/admin/api-keys") {
-            return crearApiKeyAdmin(request, env);
+            return addCorsHeaders(await crearApiKeyAdmin(request, env));
         }
         if (pathname === "/admin/api-keys/revoke") {
-            return revocarApiKeyAdmin(request, env);
+            return addCorsHeaders(await revocarApiKeyAdmin(request, env));
         }
     }
 
     // 🔐 Middleware de autenticación (para el resto de endpoints)
     const auth = await authMiddleware(request, env);
     if (auth instanceof Response) {
-        return auth;
+        return addCorsHeaders(auth);
     }
 
     // 🚦 Middleware de rate limiting
     const rateLimit = await rateLimitMiddleware(request, env);
     if (rateLimit instanceof Response) {
-        return rateLimit;
+        return addCorsHeaders(rateLimit);
     }
 
     // 📥 Crear evento (REST) - Requiere role 'write' o 'admin'
     if (pathname === "/eventos" && method === "POST") {
         const roleCheck = requireRole("write")(request);
-        if (roleCheck instanceof Response) return roleCheck;
-        return eventosHandler(request, env);
+        if (roleCheck instanceof Response) return addCorsHeaders(roleCheck);
+        return addCorsHeaders(await eventosHandler(request, env));
     }
 
     // 📤 Listar eventos - Requiere role 'read', 'write' o 'admin'
     if (pathname === "/eventos" && method === "GET") {
         const roleCheck = requireRole("read")(request);
-        if (roleCheck instanceof Response) return roleCheck;
-        return listarEventosHandler(request, env);
+        if (roleCheck instanceof Response) return addCorsHeaders(roleCheck);
+        return addCorsHeaders(await listarEventosHandler(request, env));
     }
 
     // 🔔 Notificaciones
     if (pathname === "/notificaciones" && method === "GET") {
-        return obtenerNotificacionesHandler(request, env);
+        return addCorsHeaders(await obtenerNotificacionesHandler(request, env));
     }
 
     if (pathname === "/notificaciones/marcar-leida" && method === "POST") {
-        return marcarNotificacionLeidaHandler(request, env);
+        return addCorsHeaders(await marcarNotificacionLeidaHandler(request, env));
     }
 
     if (pathname === "/notificaciones/marcar-todas-leidas" && method === "POST") {
-        return marcarTodasLeidasHandler(request, env);
+        return addCorsHeaders(await marcarTodasLeidasHandler(request, env));
     }
 
     if (pathname === "/notificaciones/contador" && method === "GET") {
-        return contadorNotificacionesHandler(request, env);
+        return addCorsHeaders(await contadorNotificacionesHandler(request, env));
     }
 
     // 📊 Analytics
     if (pathname === "/analytics/resumen-por-tipo" && method === "GET") {
-        return obtenerResumenPorTipo(request, env);
+        return addCorsHeaders(await obtenerResumenPorTipo(request, env));
     }
 
     if (pathname === "/analytics/serie-temporal" && method === "GET") {
-        return obtenerSerieTemporal(request, env);
+        return addCorsHeaders(await obtenerSerieTemporal(request, env));
     }
 
     if (pathname === "/analytics/top-cuentas" && method === "GET") {
-        return obtenerTopCuentas(request, env);
+        return addCorsHeaders(await obtenerTopCuentas(request, env));
     }
 
     if (pathname === "/analytics/estadisticas" && method === "GET") {
-        return obtenerEstadisticas(request, env);
+        return addCorsHeaders(await obtenerEstadisticas(request, env));
     }
 
-    return error("Not Found", 404);
+    return addCorsHeaders(error("Not Found", 404));
 }

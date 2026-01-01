@@ -1,17 +1,18 @@
 export async function guardarEvento(db, evento) {
     const stmt = db.prepare(`
-    INSERT INTO eventos (cuenta, tipo, origen, detalle, lat, lng, fecha)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO eventos (event_id, tipo, cuenta_codigo, origen, lat, lng, fecha_evento, payload)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     await stmt.bind(
-        evento.cuenta,
+        evento.event_id || `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         evento.tipo,
-        evento.origen,
-        evento.detalle,
-        evento.lat,
-        evento.lng,
-        evento.fecha
+        evento.cuenta,
+        evento.origen || "http",
+        evento.lat || null,
+        evento.lng || null,
+        evento.fecha,
+        JSON.stringify(evento.payload || {})
     ).run();
 }
 
