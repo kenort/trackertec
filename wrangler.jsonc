@@ -1,0 +1,35 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "mqtt-backend",
+	"main": "src/index.js",
+	"compatibility_date": "2025-12-31",
+	"observability": {
+		"enabled": true
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "eventos-db",
+			"database_id": "c0f28560-2f70-44a1-a651-1c40aae046d7",
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "MQTT_CLIENT",
+				"class_name": "MqttClientDO"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_classes": [
+				"MqttClientDO"
+			]
+		}
+	],
+	"vars": {
+		"ADMIN_KEY": "admin_super_secreta_456"
+	}
+}
