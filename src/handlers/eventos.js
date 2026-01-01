@@ -86,19 +86,46 @@ export async function listarEventosHandler(request, env) {
 
     const { searchParams } = new URL(request.url);
 
-    const cuenta = searchParams.get("cuenta") || request.cuenta;
-    const tipo = searchParams.get("tipo");
-    const limit = Number(searchParams.get("limit") ?? 50);
+    const tipoParam = searchParams.get("tipo");
+    const limit = Number(searchParams.get("limit") ?? 100);
     const offset = Number(searchParams.get("offset") ?? 0);
 
-    const eventos = await listarEventos(env.DB, {
-        cuenta,
-        tipo,
-        limit,
-        offset
-    });
+    // Para usuarios autenticados: filtrar por su cuenta
+    // Para usuarios sin autenticación: devolver todos
+    let query = `
+        SELECT *
+        FROM eventos
+        WHERE 1 = 1
+    `;
+    const params = [];
 
-    return json(eventos || []);
+    // Si la request tiene cuenta asignada (autenticada), filtrar solo esa cuenta
+    if (request.cuenta) {
+        query += " AND cuenta_codigo = ?";
+        params.push(request.cuenta);
+    }
+
+    if (tipoParam) {
+        query += " AND tipo = ?";
+        params.push(tipoParam);
+    }
+
+    query += ` 
+        ORDER BY fecha_evento DESC
+        LIMIT ? OFFSET ?
+    `;
+    params.push(limit, offset);
+
+    try {
+        const result = await env.DB.prepare(query)
+            .bind(...params)
+            .all();
+
+        return json(result.results || []);
+    } catch (err) {
+        console.error("Error listando eventos:", err);
+        return json([], 200);
+    }
 }
 
 export async function eventosPorCuentaHandler(request, env, cuenta) {
