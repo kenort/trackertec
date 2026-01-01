@@ -31,7 +31,12 @@ function addCorsHeaders(response) {
     headers.set('Access-Control-Allow-Origin', '*');
     headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     headers.set('Access-Control-Allow-Headers', 'Content-Type, x-api-key, x-admin-key');
-    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    headers.set('Access-Control-Max-Age', '86400');
+    return new Response(response.body, { 
+        status: response.status, 
+        statusText: response.statusText, 
+        headers 
+    });
 }
 
 export async function router(request, env) {
@@ -39,9 +44,14 @@ export async function router(request, env) {
     const pathname = url.pathname;
     const method = request.method;
 
-    // 🔄 Manejar preflight requests (CORS)
+    // 🔄 Manejar preflight requests (CORS) - sin await
     if (method === "OPTIONS") {
-        return addCorsHeaders(new Response(null, { status: 204 }));
+        const responseHeaders = new Headers();
+        responseHeaders.set('Access-Control-Allow-Origin', '*');
+        responseHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type, x-api-key, x-admin-key');
+        responseHeaders.set('Access-Control-Max-Age', '86400');
+        return new Response(null, { status: 204, headers: responseHeaders });
     }
 
     // ✅ Health check (sin autenticación)
