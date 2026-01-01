@@ -121,10 +121,13 @@ export async function listarEventosHandler(request, env) {
             .bind(...params)
             .all();
 
-        return json(result.results || []);
+        return json({ 
+            data: result.results || [],
+            count: (result.results || []).length
+        });
     } catch (err) {
         console.error("Error listando eventos:", err);
-        return json([], 200);
+        return json({ data: [], count: 0 }, 200);
     }
 }
 
