@@ -2,11 +2,8 @@ import { json, error } from "../utils/response";
 import { generarApiKey, hashKey } from "../utils/apiKey";
 
 export async function crearApiKeyAdmin(request, env) {
-    // 🔐 Seguridad ADMIN
-    if (request.headers.get("x-admin-key") !== env.ADMIN_KEY) {
-        return error("Forbidden", 403);
-    }
-
+    // ✅ x-admin-key ya fue validada por adminKeyValidator middleware
+    
     const body = await request.json();
     const { cuenta_codigo, nombre, role } = body;
 
@@ -42,10 +39,8 @@ export async function crearApiKeyAdmin(request, env) {
 }
 
 export async function revocarApiKeyAdmin(request, env) {
-    if (request.headers.get("x-admin-key") !== env.ADMIN_KEY) {
-        return error("Forbidden", 403);
-    }
-
+    // ✅ x-admin-key ya fue validada por adminKeyValidator middleware
+    
     const body = await request.json();
     const { api_key } = body;
 

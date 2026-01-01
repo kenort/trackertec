@@ -99,7 +99,7 @@ npm run dev
 # En otra terminal:
 curl -X POST http://localhost:8787/admin/api-keys \
   -H "x-admin-key: tu_clave_super_secreta_aqui" \
-  -H "Content-Type: application/json" \
+  -H "Content-Type: application/json" 
   -d '{
     "cuenta_codigo": "ADMIN",
     "nombre": "Admin Key",

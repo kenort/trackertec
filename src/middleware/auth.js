@@ -2,7 +2,7 @@ import { error } from "../utils/response";
 import { hashKey } from "../utils/apiKey";
 
 export async function authMiddleware(request, env) {
-    const publicPaths = ["/status", "/admin/api-keys", "/admin/api-keys/revoke"];
+    const publicPaths = ["/status"];
 
     const url = new URL(request.url);
     if (publicPaths.includes(url.pathname)) {
