@@ -48,7 +48,29 @@ function setupEventListeners() {
     });
     aplicarFiltrosBtn.addEventListener('click', applyFilters);
     limpiarFiltrosBtn.addEventListener('click', clearFilters);
-    cuentaFilter.addEventListener('input', updateTipoFilter);
+}
+
+// Actualizar tipos de filtro disponibles
+function updateTipoFilter() {
+    const cuentaSeleccionada = cuentaFilter.value;
+    
+    // Obtener tipos únicos para esa cuenta
+    const tiposUnicos = new Set();
+    eventos
+        .filter(e => !cuentaSeleccionada || e.cuenta_codigo === cuentaSeleccionada)
+        .forEach(e => tiposUnicos.add(e.tipo));
+    
+    // Actualizar opciones del selector
+    const currentValue = tipoFilter.value;
+    tipoFilter.innerHTML = '<option value="">Todos los tipos</option>';
+    tiposUnicos.forEach(tipo => {
+        const option = document.createElement('option');
+        option.value = tipo;
+        option.textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+        tipoFilter.appendChild(option);
+    });
+    
+    tipoFilter.value = currentValue;
 }
 
 // Cargar API Key guardada
