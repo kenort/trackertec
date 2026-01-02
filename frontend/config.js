@@ -1,7 +1,7 @@
 // Configuración del Dashboard
 const CONFIG = {
     // Cambiar esto según tu entorno
-    API_URL: localStorage.getItem('api_url') || 'http://localhost:8787',
+    API_URL: localStorage.getItem('api_url') || 'https://mqtt-backend.kmilo-coder.workers.dev',
     
     // Colores por tipo de evento
     EVENT_COLORS: {
