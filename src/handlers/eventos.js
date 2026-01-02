@@ -90,8 +90,6 @@ export async function listarEventosHandler(request, env) {
     const limit = Number(searchParams.get("limit") ?? 100);
     const offset = Number(searchParams.get("offset") ?? 0);
 
-    // Para usuarios autenticados: filtrar por su cuenta
-    // Para usuarios sin autenticación: devolver todos
     let query = `
         SELECT *
         FROM eventos
@@ -99,8 +97,9 @@ export async function listarEventosHandler(request, env) {
     `;
     const params = [];
 
-    // Si la request tiene cuenta asignada (autenticada), filtrar solo esa cuenta
-    if (request.cuenta) {
+    // Los admins ven todos los eventos
+    // Los no-admins solo ven los de su cuenta
+    if (request.role !== 'admin' && request.cuenta) {
         query += " AND cuenta_codigo = ?";
         params.push(request.cuenta);
     }
@@ -123,6 +122,7 @@ export async function listarEventosHandler(request, env) {
 
         console.log("DEBUG: Eventos consultados", {
             cuenta: request.cuenta,
+            role: request.role,
             resultados: result.results?.length || 0,
             total: result.results?.length || 0
         });
