@@ -121,6 +121,12 @@ export async function listarEventosHandler(request, env) {
             .bind(...params)
             .all();
 
+        console.log("DEBUG: Eventos consultados", {
+            cuenta: request.cuenta,
+            resultados: result.results?.length || 0,
+            total: result.results?.length || 0
+        });
+
         return json({ 
             data: result.results || [],
             count: (result.results || []).length
